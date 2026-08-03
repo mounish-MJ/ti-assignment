@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: rate-limiter-redis
+    # Exposing internally on the compose network; not binding to host 6379 to avoid conflicts with host Redis
+    expose:
+      - "6379"
+
+  app-node-1:
+    build: .
+    container_name: rate-limiter-app-1
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NODE_ID=node-1
+      - RATE_LIMIT_CONFIG_PATH=config/default.yaml
+    depends_on:
+      - redis
+
+  app-node-2:
+    build: .
+    container_name: rate-limiter-app-2
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NODE_ID=node-2
+      - RATE_LIMIT_CONFIG_PATH=config/default.yaml
+    depends_on:
+      - redis
+
+  app-node-3:
+    build: .
+    container_name: rate-limiter-app-3
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NODE_ID=node-3
+      - RATE_LIMIT_CONFIG_PATH=config/default.yaml
+    depends_on:
+      - redis
+
+  load-balancer:
+    image: nginx:alpine
+    container_name: rate-limiter-lb
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app-node-1
+      - app-node-2
+      - app-node-3

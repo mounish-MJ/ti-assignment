@@ -1,0 +1,14 @@
+default_rpm: 100
+window_seconds: 60
+strict_mode: true
+algorithm: fixed_window
+customer_overrides: {}
+customers:
+  acme:
+    rpm: 100
+    policy: contracted_standard
+    exception: false
+  northwind:
+    rpm: 300
+    policy: contracted_enterprise
+    exception: false
